@@ -1,35 +1,89 @@
-// C++ code
-//
-int dioda[] = {13,12,11,10};
-unsigned long licznik2 = 0;
+int zielone1 = 13;
+int zielone2 = 11;
+int zielone3 = 10;
+int zielone4 = 7;
+
+int czerwone1 = 12;
+int czerwone2 = 6;
+int czerwone3 = 9;
+int czerwone4 = 8;
+
+unsigned long poprzedniCzas = 0;
+
+int sygnal = 1;
+bool przerwa = false;
+
 void setup()
 {
-	for(int i=0; i<=4; i++)
-    {
-      pinMode(dioda[i], OUTPUT);
-    }
+  pinMode(zielone1, OUTPUT);
+  pinMode(zielone2, OUTPUT);
+  pinMode(zielone3, OUTPUT);
+  pinMode(zielone4, OUTPUT);
+
+  pinMode(czerwone1, OUTPUT);
+  pinMode(czerwone2, OUTPUT);
+  pinMode(czerwone3, OUTPUT);
+  pinMode(czerwone4, OUTPUT);
 }
 
 void loop()
 {
-  unsigned long licznik1 = millis();
-  if(licznik1-licznik2<4000)
+  unsigned long obecnyCzas = millis();
+
+  if (!przerwa && obecnyCzas - poprzedniCzas >= 5000)
   {
-  digitalWrite(10, HIGH);
-  digitalWrite(13, HIGH);
-  digitalWrite(12, LOW);
-  digitalWrite(11, LOW);
+    poprzedniCzas = obecnyCzas;
+    przerwa = true;
   }
-  else if(licznik1-licznik2<8000)
+  if (przerwa && obecnyCzas - poprzedniCzas >= 1000)
   {
-    digitalWrite(10, LOW);
-  	digitalWrite(13, LOW);
-  	digitalWrite(12, HIGH);
-  	digitalWrite(11, HIGH);
-    licznik1 = millis();
+    poprzedniCzas = obecnyCzas;
+    przerwa = false;
+
+    sygnal++;
+
+    if (sygnal > 4)
+    {
+      sygnal = 1;
+    }
   }
-  else
+
+  digitalWrite(zielone1, LOW);
+  digitalWrite(zielone2, LOW);
+  digitalWrite(zielone3, LOW);
+  digitalWrite(zielone4, LOW);
+
+  digitalWrite(czerwone2, HIGH);
+  digitalWrite(czerwone3, HIGH);
+  digitalWrite(czerwone4, HIGH);
+
+  if (!przerwa)
   {
-    licznik2=licznik1;
+    if (sygnal == 1)
+    {
+      digitalWrite(zielone1, HIGH);
+      digitalWrite(czerwone1, LOW);
+    }
+
+    if (sygnal == 2)
+    {
+      digitalWrite(zielone2, HIGH);
+      digitalWrite(czerwone2, LOW);
+      digitalWrite(czerwone1, HIGH);
+    }
+
+    if (sygnal == 3)
+    {
+      digitalWrite(zielone3, HIGH);
+      digitalWrite(czerwone3, LOW);
+      digitalWrite(czerwone1, HIGH);
+    }
+
+    if (sygnal == 4)
+    {
+      digitalWrite(zielone4, HIGH);
+      digitalWrite(czerwone4, LOW);
+      digitalWrite(czerwone1, HIGH);
+    }
   }
 }
