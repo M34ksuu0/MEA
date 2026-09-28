@@ -1,12 +1,30 @@
-# Sygnalizacja świetlna – ruch wahadłowy
-Projekt przedstawia sygnalizację świetlną sterującą ruchem wahadłowym za pomocą Arduino Uno.
+# Projekt przedstawia sygnalizację świetlną Arduino z 4 zestawami diod.
 
 Działanie
 
-Przez 4 sekundy zielone światło dla jednego kierunku.
+    Zielone światło świeci przez 5 sekund.
 
-Następnie przez 4 sekundy zielone światło dla drugiego kierunku.
+    Następnie przez 1 sekundę wszystkie światła są czerwone.
 
-Światła zmieniają się cyklicznie.
+    Program przełącza się na kolejne światło.
 
-Czas sterowany jest za pomocą millis().
+    Po czwartym świetle cykl zaczyna się od początku.
+
+Do odmierzania czasu wykorzystano millis() zamiast delay().
+
+Piny
+
+Zielone: 13, 11, 10, 7
+
+Czerwone: 12, 6, 9, 8
+
+Technologie
+
+    Arduino
+
+    C++
+
+    millis()
+
+    digitalWrite()
+
