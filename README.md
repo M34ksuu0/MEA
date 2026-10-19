@@ -75,8 +75,8 @@ Konfiguracja czasu
 
 Czasy działania można zmienić za pomocą dwóch stałych zdefiniowanych w kodzie:
 
-const unsigned long CZERWONE_CZAS = 2000;
-const unsigned long ZIELONE_CZAS = 5000;
+    const unsigned long CZERWONE_CZAS = 2000;
+    const unsigned long ZIELONE_CZAS = 5000;
 
 CZERWONE_CZAS – czas oczekiwania przed kolejnym zielonym światłem, w milisekundach.
 ZIELONE_CZAS – czas świecenia zielonego światła w normalnej sekwencji, w milisekundach.
