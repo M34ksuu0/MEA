@@ -17,159 +17,130 @@ const int pir2 = 3;
 const int pir3 = 5;
 const int pir4 = 2;
 
-const unsigned long CZERWONE_CZAS = 2000;
-const unsigned long ZIELONE_CZAS = 5000;
+const unsigned long czasZielonego = 5000;
 
-int stan = 0;
-unsigned long czas = 0;
+// Kolejka kierunków
+int kolejka[4];
+int poczatek = 0;
+int koniec = 0;
+int liczbaWKolejce = 0;
 
-bool poprzedniRuch = false;
+// Aktualnie obsługiwany kierunek
+int aktywnyKierunek = -1;
+unsigned long czasStartu = 0;
 
-void czerwone() {
-  digitalWrite(zielone1, LOW);
-  digitalWrite(czerwone1, HIGH);
+// Zapamiętanie poprzedniego stanu PIR
+bool poprzedniRuch[4] = {false, false, false, false};
 
-  digitalWrite(zielone2, LOW);
-  digitalWrite(czerwone2, HIGH);
+const int pinyZielone[4] = {
+  zielone1, zielone2, zielone3, zielone4
+};
 
-  digitalWrite(zielone3, LOW);
-  digitalWrite(czerwone3, HIGH);
+const int pinyCzerwone[4] = {
+  czerwone1, czerwone2, czerwone3, czerwone4
+};
 
-  digitalWrite(zielone4, LOW);
-  digitalWrite(czerwone4, HIGH);
+const int pinyPIR[4] = {
+  pir1, pir2, pir3, pir4
+};
+
+void ustawCzerwone() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(pinyZielone[i], LOW);
+    digitalWrite(pinyCzerwone[i], HIGH);
+  }
 }
 
-void ustawSwiatla(bool ruch1, bool ruch2,
-                  bool ruch3, bool ruch4) {
-  digitalWrite(zielone1, ruch1 ? HIGH : LOW);
-  digitalWrite(czerwone1, ruch1 ? LOW : HIGH);
+bool jestWKolejceLubAktywny(int kierunek) {
+  if (aktywnyKierunek == kierunek) {
+    return true;
+  }
 
-  digitalWrite(zielone2, ruch2 ? HIGH : LOW);
-  digitalWrite(czerwone2, ruch2 ? LOW : HIGH);
+  for (int i = 0; i < liczbaWKolejce; i++) {
+    int indeks = (poczatek + i) % 4;
 
-  digitalWrite(zielone3, ruch3 ? HIGH : LOW);
-  digitalWrite(czerwone3, ruch3 ? LOW : HIGH);
+    if (kolejka[indeks] == kierunek) {
+      return true;
+    }
+  }
 
-  digitalWrite(zielone4, ruch4 ? HIGH : LOW);
-  digitalWrite(czerwone4, ruch4 ? LOW : HIGH);
+  return false;
+}
+
+void dodajDoKolejki(int kierunek) {
+  // Nie dodawaj ponownie tego samego kierunku
+  if (jestWKolejceLubAktywny(kierunek)) {
+    return;
+  }
+
+  if (liczbaWKolejce < 4) {
+    kolejka[koniec] = kierunek;
+    koniec = (koniec + 1) % 4;
+    liczbaWKolejce++;
+
+    Serial.print("Dodano do kolejki kierunek: ");
+    Serial.println(kierunek + 1);
+  }
+}
+
+void rozpocznijKierunek(int kierunek) {
+  aktywnyKierunek = kierunek;
+  czasStartu = millis();
+
+  ustawCzerwone();
+
+  digitalWrite(pinyCzerwone[kierunek], LOW);
+  digitalWrite(pinyZielone[kierunek], HIGH);
+
+  Serial.print("Zielone dla kierunku: ");
+  Serial.println(kierunek + 1);
 }
 
 void setup() {
-  pinMode(zielone1, OUTPUT);
-  pinMode(czerwone1, OUTPUT);
-
-  pinMode(zielone2, OUTPUT);
-  pinMode(czerwone2, OUTPUT);
-
-  pinMode(zielone3, OUTPUT);
-  pinMode(czerwone3, OUTPUT);
-
-  pinMode(zielone4, OUTPUT);
-  pinMode(czerwone4, OUTPUT);
-
-  pinMode(pir1, INPUT);
-  pinMode(pir2, INPUT);
-  pinMode(pir3, INPUT);
-  pinMode(pir4, INPUT);
-
-  czerwone();
-  czas = millis();
-
   Serial.begin(9600);
+
+  for (int i = 0; i < 4; i++) {
+    pinMode(pinyZielone[i], OUTPUT);
+    pinMode(pinyCzerwone[i], OUTPUT);
+    pinMode(pinyPIR[i], INPUT);
+  }
+
+  ustawCzerwone();
 }
 
 void loop() {
-  unsigned long teraz = millis();
+  // Odczyt czujników i wykrywanie nowego sygnału
+  for (int i = 0; i < 4; i++) {
+    bool ruch = digitalRead(pinyPIR[i]) == HIGH;
 
-  // Odczyt czujnikow
-  bool ruch1 = digitalRead(pir1) == HIGH;
-  bool ruch2 = digitalRead(pir2) == HIGH;
-  bool ruch3 = digitalRead(pir3) == HIGH;
-  bool ruch4 = digitalRead(pir4) == HIGH;
+    // Dodaj tylko przy przejściu LOW -> HIGH
+    if (ruch && !poprzedniRuch[i]) {
+      dodajDoKolejki(i);
+    }
 
-  bool wykrytoRuch = ruch1 || ruch2 || ruch3 || ruch4;
-
-  // Gdy wykryto ruch, sterowanie PIR ma pierwszenstwo
-  if (wykrytoRuch) {
-    ustawSwiatla(ruch1, ruch2, ruch3, ruch4);
-    poprzedniRuch = true;
-
-    // Zapamietaj, ze byl ruch
-    return;
+    poprzedniRuch[i] = ruch;
   }
 
-  // Po ustaniu ruchu rozpocznij sekwencje od poczatku
-  if (poprzedniRuch) {
-    poprzedniRuch = false;
-    stan = 0;
-    czas = teraz;
-    czerwone();
-    return;
+  // Sprawdź, czy minęło 5 sekund zielonego
+  if (aktywnyKierunek != -1 &&
+      millis() - czasStartu >= czasZielonego) {
+
+    digitalWrite(pinyZielone[aktywnyKierunek], LOW);
+    digitalWrite(pinyCzerwone[aktywnyKierunek], HIGH);
+
+    Serial.print("Koniec zielonego kierunku: ");
+    Serial.println(aktywnyKierunek + 1);
+
+    aktywnyKierunek = -1;
   }
 
-  // NORMALNA SEKWENCJA SWIATEL
+  // Uruchom następny kierunek, jeśli żaden nie jest aktywny
+  if (aktywnyKierunek == -1 && liczbaWKolejce > 0) {
+    int nastepny = kolejka[poczatek];
 
-  // CZERWONE przed zielonym 1
-  if (stan == 0 && teraz - czas >= CZERWONE_CZAS) {
-    stan = 1;
-    czas = teraz;
+    poczatek = (poczatek + 1) % 4;
+    liczbaWKolejce--;
 
-    digitalWrite(czerwone1, LOW);
-    digitalWrite(zielone1, HIGH);
-  }
-
-  // ZIELONE 1
-  else if (stan == 1 && teraz - czas >= ZIELONE_CZAS) {
-    stan = 2;
-    czas = teraz;
-    czerwone();
-  }
-
-  // CZERWONE przed zielonym 2
-  else if (stan == 2 && teraz - czas >= CZERWONE_CZAS) {
-    stan = 3;
-    czas = teraz;
-
-    digitalWrite(czerwone2, LOW);
-    digitalWrite(zielone2, HIGH);
-  }
-
-  // ZIELONE 2
-  else if (stan == 3 && teraz - czas >= ZIELONE_CZAS) {
-    stan = 4;
-    czas = teraz;
-    czerwone();
-  }
-
-  // CZERWONE przed zielonym 3
-  else if (stan == 4 && teraz - czas >= CZERWONE_CZAS) {
-    stan = 5;
-    czas = teraz;
-
-    digitalWrite(czerwone3, LOW);
-    digitalWrite(zielone3, HIGH);
-  }
-
-  // ZIELONE 3
-  else if (stan == 5 && teraz - czas >= ZIELONE_CZAS) {
-    stan = 6;
-    czas = teraz;
-    czerwone();
-  }
-
-  // CZERWONE przed zielonym 4
-  else if (stan == 6 && teraz - czas >= CZERWONE_CZAS) {
-    stan = 7;
-    czas = teraz;
-
-    digitalWrite(czerwone4, LOW);
-    digitalWrite(zielone4, HIGH);
-  }
-
-  // ZIELONE 4
-  else if (stan == 7 && teraz - czas >= ZIELONE_CZAS) {
-    stan = 0;
-    czas = teraz;
-    czerwone();
+    rozpocznijKierunek(nastepny);
   }
 }
