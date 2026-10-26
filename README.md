@@ -5,68 +5,89 @@ Projekt przedstawia inteligentną sygnalizację świetlną dla czterech kierunk�
 
 System wykrywa ruch w poszczególnych kierunkach i dodaje zgłoszenia do kolejki. Każdy kierunek otrzymuje zielone światło na określony czas, a pozostałe kierunki mają światło czerwone.
 
-⚙️ Funkcje projektu
+## ⚙️ Funkcje projektu
+
 🚦 Obsługa czterech kierunków ruchu.
+
 🟢 Automatyczne sterowanie światłami zielonymi i czerwonymi.
+
 👁️ Wykrywanie ruchu za pomocą czujników PIR.
+
 📋 Kolejkowanie kierunków, w których wykryto ruch.
+
 ⏱️ Czas zielonego światła wynoszący 5 sekund.
+
 ⚡ Obsługa przerwań sprzętowych dla dwóch czujników PIR.
+
 🖥️ Wyświetlanie informacji w monitorze portu szeregowego.
 🧰 Wykorzystane komponenty
-Arduino UNO
-4 czujniki ruchu PIR
-4 zielone diody LED
-4 czerwone diody LED
-Rezystory do diod LED
-Płytka stykowa
-Przewody połączeniowe
-🔌 Schemat połączeń
-Diody LED
-Kierunek	Zielona LED	Czerwona LED
-Kierunek 1	Pin 11	Pin 6
-Kierunek 2	Pin 10	Pin 9
-Kierunek 3	Pin 13	Pin 12
-Kierunek 4	Pin 7	Pin 8
-Czujniki PIR
-Czujnik	Pin Arduino	Kierunek
-PIR 1	4	Kierunek 1
-PIR 2	3	Kierunek 2
-PIR 3	5	Kierunek 3
-PIR 4	2	Kierunek 4
-🧠 Zasada działania
-Po uruchomieniu wszystkie kierunki otrzymują czerwone światło.
-System monitoruje sygnały z czterech czujników PIR.
-Po wykryciu ruchu odpowiedni kierunek zostaje dodany do kolejki.
-Jeśli kierunek nie jest aktywny ani obecny w kolejce, zostaje zapisany jako nowe zgłoszenie.
-Gdy żaden kierunek nie ma zielonego światła, system uruchamia kolejny kierunek z kolejki.
-Wybrany kierunek otrzymuje zielone światło na 5 sekund.
-Po upływie tego czasu zielone światło zostaje wyłączone, a czerwone włączone.
-System przechodzi do kolejnego zgłoszonego kierunku.
-⏱️ Parametry systemu
-Liczba kierunków: 4
-Czas zielonego światła: 5000 ms (5 sekund)
-Maksymalna liczba zgłoszeń w kolejce: 4
-Przerwania sprzętowe: PIR 2 i PIR 4
-Komunikacja szeregowa: 9600 baud
-💻 Wykorzystane technologie
-C++
-Arduino UNO
-Arduino IDE
-Czujniki ruchu PIR
-🚀 Uruchomienie projektu
-Podłącz diody LED i czujniki PIR zgodnie z tabelami połączeń.
-Otwórz kod programu w Arduino IDE.
-Wybierz płytkę Arduino UNO.
-Wybierz odpowiedni port COM.
-Wgraj program na mikrokontroler.
-Otwórz monitor portu szeregowego i ustaw prędkość na 9600 baud.
-Wykryj ruch przed jednym z czujników i obserwuj działanie sygnalizacji.
-⚠️ Uwagi techniczne
-Arduino UNO obsługuje standardowe przerwania zewnętrzne na pinach 2 i 3.
-Czujniki PIR mogą wymagać czasu na stabilizację po włączeniu zasilania.
-Czas świecenia można zmienić, modyfikując zmienną czasZielonego.
-Projekt ma charakter edukacyjny i demonstracyjny. Nie jest przeznaczony do sterowania rzeczywistą sygnalizacją drogową.
-👨‍💻 Autor
 
-Projekt edukacyjny — inteligentna sygnalizacja świetlna z wykorzystaniem Arduino i czujników PIR.
+Arduino UNO
+
+4 czujniki ruchu PIR
+
+4 zielone diody LED
+
+4 czerwone diody LED
+
+Rezystory do diod LED
+
+Płytka stykowa
+
+Przewody połączeniowe
+
+🔌 Schemat połączeń
+
+Diody LED
+
+Kierunek	Zielona LED	Czerwona LED
+
+Kierunek 1	Pin 11	Pin 6
+
+Kierunek 2	Pin 10	Pin 9
+
+Kierunek 3	Pin 13	Pin 12
+
+Kierunek 4	Pin 7	Pin 8
+
+Czujniki PIR
+
+Czujnik	Pin Arduino	Kierunek
+
+PIR 1	4	Kierunek 1
+
+PIR 2	3	Kierunek 2
+
+PIR 3	5	Kierunek 3
+
+PIR 4	2	Kierunek 4
+
+🧠 Zasada działania
+
+Po uruchomieniu wszystkie kierunki otrzymują czerwone światło.
+
+System monitoruje sygnały z czterech czujników PIR.
+
+Po wykryciu ruchu odpowiedni kierunek zostaje dodany do kolejki.
+
+Jeśli kierunek nie jest aktywny ani obecny w kolejce, zostaje zapisany jako nowe zgłoszenie.
+
+Gdy żaden kierunek nie ma zielonego światła, system uruchamia kolejny kierunek z kolejki.
+
+Wybrany kierunek otrzymuje zielone światło na 5 sekund.
+
+Po upływie tego czasu zielone światło zostaje wyłączone, a czerwone włączone.
+
+System przechodzi do kolejnego zgłoszonego kierunku.
+
+⏱️ Parametry systemu
+
+Liczba kierunków: 4
+
+Czas zielonego światła: 5000 ms (5 sekund)
+
+Maksymalna liczba zgłoszeń w kolejce: 4
+
+Przerwania sprzętowe: PIR 2 i PIR 4
+
+Komunikacja szeregowa: 9600 baud
