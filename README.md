@@ -20,7 +20,8 @@ System wykrywa ruch w poszczególnych kierunkach i dodaje zgłoszenia do kolejki
 ⚡ Obsługa przerwań sprzętowych dla dwóch czujników PIR.
 
 🖥️ Wyświetlanie informacji w monitorze portu szeregowego.
-🧰 Wykorzystane komponenty
+
+## 🧰 Wykorzystane komponenty
 
 Arduino UNO
 
@@ -36,7 +37,7 @@ Płytka stykowa
 
 Przewody połączeniowe
 
-🔌 Schemat połączeń
+## 🔌 Schemat połączeń
 
 Diody LED
 
@@ -62,7 +63,7 @@ PIR 3	5	Kierunek 3
 
 PIR 4	2	Kierunek 4
 
-🧠 Zasada działania
+## 🧠 Zasada działania
 
 Po uruchomieniu wszystkie kierunki otrzymują czerwone światło.
 
@@ -80,7 +81,7 @@ Po upływie tego czasu zielone światło zostaje wyłączone, a czerwone włącz
 
 System przechodzi do kolejnego zgłoszonego kierunku.
 
-⏱️ Parametry systemu
+## ⏱️ Parametry systemu
 
 Liczba kierunków: 4
 
