@@ -1,89 +1,193 @@
-int zielone1 = 13;
-int zielone2 = 11;
-int zielone3 = 10;
-int zielone4 = 7;
 
-int czerwone1 = 12;
-int czerwone2 = 6;
-int czerwone3 = 9;
-int czerwone4 = 8;
+const int zielone1 = 11;
+const int czerwone1 = 6;
 
-unsigned long poprzedniCzas = 0;
+const int zielone2 = 10;
+const int czerwone2 = 9;
 
-int sygnal = 1;
-bool przerwa = false;
+const int zielone3 = 13;
+const int czerwone3 = 12;
 
-void setup()
-{
-  pinMode(zielone1, OUTPUT);
-  pinMode(zielone2, OUTPUT);
-  pinMode(zielone3, OUTPUT);
-  pinMode(zielone4, OUTPUT);
+const int zielone4 = 7;
+const int czerwone4 = 8;
 
-  pinMode(czerwone1, OUTPUT);
-  pinMode(czerwone2, OUTPUT);
-  pinMode(czerwone3, OUTPUT);
-  pinMode(czerwone4, OUTPUT);
+// Czujniki PIR
+const int pir1 = 4;
+const int pir2 = 3;
+const int pir3 = 5;
+const int pir4 = 2;
+
+const unsigned long czasZielonego = 5000;
+
+// Kolejka kierunków
+int kolejka[4];
+int poczatek = 0;
+int koniec = 0;
+int liczbaWKolejce = 0;
+
+int aktywnyKierunek = -1;
+unsigned long czasStartu = 0;
+
+bool poprzedniRuch[4] = {false, false, false, false};
+
+// Flagi ustawiane przez przerwania
+volatile bool wykrytoPir2 = false;
+volatile bool wykrytoPir4 = false;
+
+const int pinyZielone[4] = {
+  zielone1, zielone2, zielone3, zielone4
+};
+
+const int pinyCzerwone[4] = {
+  czerwone1, czerwone2, czerwone3, czerwone4
+};
+
+const int pinyPIR[4] = {
+  pir1, pir2, pir3, pir4
+};
+
+// Funkcje przerwań — muszą być krótkie
+void przerwaniePir2() {
+  wykrytoPir2 = true;
 }
 
-void loop()
-{
-  unsigned long obecnyCzas = millis();
+void przerwaniePir4() {
+  wykrytoPir4 = true;
+}
 
-  if (!przerwa && obecnyCzas - poprzedniCzas >= 5000)
-  {
-    poprzedniCzas = obecnyCzas;
-    przerwa = true;
+void ustawCzerwone() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(pinyZielone[i], LOW);
+    digitalWrite(pinyCzerwone[i], HIGH);
   }
-  if (przerwa && obecnyCzas - poprzedniCzas >= 1000)
-  {
-    poprzedniCzas = obecnyCzas;
-    przerwa = false;
+}
 
-    sygnal++;
-
-    if (sygnal > 4)
-    {
-      sygnal = 1;
-    }
+bool jestWKolejceLubAktywny(int kierunek) {
+  if (aktywnyKierunek == kierunek) {
+    return true;
   }
 
-  digitalWrite(zielone1, LOW);
-  digitalWrite(zielone2, LOW);
-  digitalWrite(zielone3, LOW);
-  digitalWrite(zielone4, LOW);
+  for (int i = 0; i < liczbaWKolejce; i++) {
+    int indeks = (poczatek + i) % 4;
 
-  digitalWrite(czerwone2, HIGH);
-  digitalWrite(czerwone3, HIGH);
-  digitalWrite(czerwone4, HIGH);
+    if (kolejka[indeks] == kierunek) {
+      return true;
+    }
+  }
 
-  if (!przerwa)
-  {
-    if (sygnal == 1)
-    {
-      digitalWrite(zielone1, HIGH);
-      digitalWrite(czerwone1, LOW);
+  return false;
+}
+
+void dodajDoKolejki(int kierunek) {
+  if (jestWKolejceLubAktywny(kierunek)) {
+    return;
+  }
+
+  if (liczbaWKolejce < 4) {
+    kolejka[koniec] = kierunek;
+    koniec = (koniec + 1) % 4;
+    liczbaWKolejce++;
+
+    Serial.print("Dodano do kolejki kierunek: ");
+    Serial.println(kierunek + 1);
+  }
+}
+
+void rozpocznijKierunek(int kierunek) {
+  aktywnyKierunek = kierunek;
+  czasStartu = millis();
+
+  ustawCzerwone();
+
+  digitalWrite(pinyCzerwone[kierunek], LOW);
+  digitalWrite(pinyZielone[kierunek], HIGH);
+
+  Serial.print("Zielone dla kierunku: ");
+  Serial.println(kierunek + 1);
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  for (int i = 0; i < 4; i++) {
+    pinMode(pinyZielone[i], OUTPUT);
+    pinMode(pinyCzerwone[i], OUTPUT);
+    pinMode(pinyPIR[i], INPUT);
+  }
+
+  ustawCzerwone();
+
+  // Sprzętowe przerwania na Arduino UNO
+  attachInterrupt(
+    digitalPinToInterrupt(pir2),
+    przerwaniePir2,
+    RISING
+  );
+
+  attachInterrupt(
+    digitalPinToInterrupt(pir4),
+    przerwaniePir4,
+    RISING
+  );
+}
+
+void loop() {
+  // Odczyt i wyzerowanie flag atomowo
+  bool ruchPir2;
+  bool ruchPir4;
+
+  noInterrupts();
+  ruchPir2 = wykrytoPir2;
+  ruchPir4 = wykrytoPir4;
+  wykrytoPir2 = false;
+  wykrytoPir4 = false;
+  interrupts();
+
+  // Kierunek 2: czujnik na pinie 3
+  if (ruchPir2) {
+    dodajDoKolejki(1);
+  }
+
+  // Kierunek 4: czujnik na pinie 2
+  if (ruchPir4) {
+    dodajDoKolejki(3);
+  }
+
+  // Pozostałe czujniki — zwykłe odczyty
+  for (int i = 0; i < 4; i++) {
+    if (i == 1 || i == 3) {
+      continue;
     }
 
-    if (sygnal == 2)
-    {
-      digitalWrite(zielone2, HIGH);
-      digitalWrite(czerwone2, LOW);
-      digitalWrite(czerwone1, HIGH);
+    bool ruch = digitalRead(pinyPIR[i]) == HIGH;
+
+    if (ruch && !poprzedniRuch[i]) {
+      dodajDoKolejki(i);
     }
 
-    if (sygnal == 3)
-    {
-      digitalWrite(zielone3, HIGH);
-      digitalWrite(czerwone3, LOW);
-      digitalWrite(czerwone1, HIGH);
-    }
+    poprzedniRuch[i] = ruch;
+  }
 
-    if (sygnal == 4)
-    {
-      digitalWrite(zielone4, HIGH);
-      digitalWrite(czerwone4, LOW);
-      digitalWrite(czerwone1, HIGH);
-    }
+  // Zakończenie zielonego światła
+  if (aktywnyKierunek != -1 &&
+      millis() - czasStartu >= czasZielonego) {
+
+    digitalWrite(pinyZielone[aktywnyKierunek], LOW);
+    digitalWrite(pinyCzerwone[aktywnyKierunek], HIGH);
+
+    Serial.print("Koniec zielonego kierunku: ");
+    Serial.println(aktywnyKierunek + 1);
+
+    aktywnyKierunek = -1;
+  }
+
+  // Uruchomienie następnego kierunku
+  if (aktywnyKierunek == -1 && liczbaWKolejce > 0) {
+    int nastepny = kolejka[poczatek];
+
+    poczatek = (poczatek + 1) % 4;
+    liczbaWKolejce--;
+
+    rozpocznijKierunek(nastepny);
   }
 }
