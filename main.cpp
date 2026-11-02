@@ -1,89 +1,43 @@
-int zielone1 = 13;
-int zielone2 = 11;
-int zielone3 = 10;
-int zielone4 = 7;
 
-int czerwone1 = 12;
-int czerwone2 = 6;
-int czerwone3 = 9;
-int czerwone4 = 8;
+#include <Adafruit_LiquidCrystal.h>
 
-unsigned long poprzedniCzas = 0;
+Adafruit_LiquidCrystal lcd_1(0);
 
-int sygnal = 1;
-bool przerwa = false;
+unsigned long previousMillis = 0;
+const long interval = 400;
 
-void setup()
-{
-  pinMode(zielone1, OUTPUT);
-  pinMode(zielone2, OUTPUT);
-  pinMode(zielone3, OUTPUT);
-  pinMode(zielone4, OUTPUT);
+int pozycja = 0;
 
-  pinMode(czerwone1, OUTPUT);
-  pinMode(czerwone2, OUTPUT);
-  pinMode(czerwone3, OUTPUT);
-  pinMode(czerwone4, OUTPUT);
+String reklama = "    EASY BOOST'A               ^LEVEL UP^";
+
+void LCD_Write() {
+  lcd_1.setCursor(0, 0);
+
+  for (int i = 0; i < 16; i++) {
+    lcd_1.print(reklama[(pozycja + i) % reklama.length()]);
+  }
 }
 
-void loop()
-{
-  unsigned long obecnyCzas = millis();
+void setup() {
+  lcd_1.begin(16, 2);
+  lcd_1.setBacklight(1);
 
-  if (!przerwa && obecnyCzas - poprzedniCzas >= 5000)
-  {
-    poprzedniCzas = obecnyCzas;
-    przerwa = true;
-  }
-  if (przerwa && obecnyCzas - poprzedniCzas >= 1000)
-  {
-    poprzedniCzas = obecnyCzas;
-    przerwa = false;
+  lcd_1.setCursor(0, 1);
+  lcd_1.print("   KUP i PIJ!   ");
+}
 
-    sygnal++;
+void loop() {
+  unsigned long currentMillis = millis();
 
-    if (sygnal > 4)
-    {
-      sygnal = 1;
-    }
-  }
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
 
-  digitalWrite(zielone1, LOW);
-  digitalWrite(zielone2, LOW);
-  digitalWrite(zielone3, LOW);
-  digitalWrite(zielone4, LOW);
+    LCD_Write();
 
-  digitalWrite(czerwone2, HIGH);
-  digitalWrite(czerwone3, HIGH);
-  digitalWrite(czerwone4, HIGH);
+    pozycja++;
 
-  if (!przerwa)
-  {
-    if (sygnal == 1)
-    {
-      digitalWrite(zielone1, HIGH);
-      digitalWrite(czerwone1, LOW);
-    }
-
-    if (sygnal == 2)
-    {
-      digitalWrite(zielone2, HIGH);
-      digitalWrite(czerwone2, LOW);
-      digitalWrite(czerwone1, HIGH);
-    }
-
-    if (sygnal == 3)
-    {
-      digitalWrite(zielone3, HIGH);
-      digitalWrite(czerwone3, LOW);
-      digitalWrite(czerwone1, HIGH);
-    }
-
-    if (sygnal == 4)
-    {
-      digitalWrite(zielone4, HIGH);
-      digitalWrite(czerwone4, LOW);
-      digitalWrite(czerwone1, HIGH);
+    if (pozycja >= reklama.length()) {
+      pozycja = 0;
     }
   }
 }
